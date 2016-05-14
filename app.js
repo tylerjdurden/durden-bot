@@ -12,6 +12,8 @@ app.listen(config.port, function () {
 });
 */
 
+'use strict'
+
 var tg = require('telegram-node-bot')('192089181:AAE01YNBSlL80xnlWDNNSmKFdjOiIhSMCkE')
 
 tg.router.
