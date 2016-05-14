@@ -9,6 +9,7 @@ var config = {
       name: 'durdenbot'
     },
     //port: process.env.PORT || 3000,
+    port: process.env.PORT,
   },
 
   test: {

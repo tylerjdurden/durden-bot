@@ -10,7 +10,7 @@
     "telegram-node-bot": "^2.1.2"
   },
   "description": "A very helpful telegram bot.",
-  "main": "Gruntfile.js",
+  "main": "app.js",
   "author": "tylerjdurden",
   "license": "ISC"
 }
