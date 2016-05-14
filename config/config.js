@@ -8,7 +8,7 @@ var config = {
     app: {
       name: 'durdenbot'
     },
-    //port: process.env.PORT || 3000,
+    port: process.env.PORT || 3000,
     port: process.env.PORT,
   },
 
@@ -17,7 +17,7 @@ var config = {
     app: {
       name: 'durdenbot'
     },
-    //port: process.env.PORT || 3000,
+    port: process.env.PORT || 3000,
   },
 
   production: {
@@ -25,7 +25,7 @@ var config = {
     app: {
       name: 'durdenbot'
     },
-    //port: process.env.PORT || 3000,
+    port: process.env.PORT || 3000,
   }
 };
 
