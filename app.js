@@ -5,7 +5,7 @@ var tg = require('telegram-node-bot')('192089181:AAE01YNBSlL80xnlWDNNSmKFdjOiIhS
 tg.router.
 	when(['/start'], 'StartController').
 	when(['/help'], 'HelpController').
-	when(['ping'], 'PingController')
+	when(['/ping', 'ping', 'Ping', 'PING'], 'PingController')
 
 tg.controller('StartController', ($) => {
 	var start_message = "Hi! I'm DurdenBot. Type /help to see what I can do. "
@@ -24,8 +24,12 @@ tg.controller('HelpController', ($) => {
 })
 
 tg.controller('PingController', ($) => {
-	tg.for('ping', () => {
-		$.sendMessage('pong')	
-	})
+	var callback = () => { $.sendMessage('pong!') }
+
+	tg.for('/ping', callback)
+	tg.for('ping', callback)
+	tg.for('Ping', callback)
+	tg.for('PING', callback)
+	
 })
 
