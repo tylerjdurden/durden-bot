@@ -109,7 +109,7 @@ tg.controller('KittenController', ($) => {
 					wstream.on('finish', () => {
 						var read_stream = fs.createReadStream(__dirname + '/temp/' + fileName);
 						read_stream.on('open', () => {
-							$.sendVideo(read_stream);
+							$.sendVideo(read_stream, function() { fs.unlink(__dirname + '/temp/' + fileName); });
 						});
 					});
 
