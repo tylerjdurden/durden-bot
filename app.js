@@ -2,7 +2,6 @@
 
 var tg = require('telegram-node-bot')('192089181:AAE01YNBSlL80xnlWDNNSmKFdjOiIhSMCkE')
 var request = require('request')
-var random_kitten = require('./random_kitten.js').random_kitten
 
 // lets heroku set the port
 var port = process.env.PORT
