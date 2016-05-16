@@ -72,8 +72,8 @@ tg.controller('KittenController', ($) => {
 		}
 	}
 
-	tg.for('/kitty',  request.get(options, get_kitten));
-	tg.for('/kitten', request.get(options, get_kitten));
+	tg.for('/kitty',  get_kitten);
+	tg.for('/kitten', get_kitten);
 })
 
 
