@@ -1,24 +1,26 @@
 'use strict'
 
-var tg = require('telegram-node-bot')('192089181:AAE01YNBSlL80xnlWDNNSmKFdjOiIhSMCkE')
-var request = require('request')
+var tg = require('telegram-node-bot')('192089181:AAE01YNBSlL80xnlWDNNSmKFdjOiIhSMCkE');
+var request = require('request');
+var fs = require('fs');
+//var FormData = require('form-data')
 
 // lets heroku set the port
-var port = process.env.PORT
+var port = process.env.PORT;
 
 tg.router.
 	when(['/start'], 'StartController').
 	when(['/help'], 'HelpController').
 	when(['/ping', 'ping', 'Ping', 'PING'], 'PingController').
-	when(['/kitty', '/kitten'], 'KittenController')
+	when(['/kitty', '/kitten'], 'KittenController');
 
 tg.controller('StartController', ($) => {
 	var start_message = 'Hi! I\'m DurdenBot. Type /help to see what I can do.';
 
 	tg.for('/start', () => {
 		$.sendMessage(start_message)
-	})
-})
+	});
+});
 
 tg.controller('HelpController', ($) => {
 	var help_message = 
@@ -27,11 +29,13 @@ tg.controller('HelpController', ($) => {
 
 	tg.for('/help', () => {
 		$.sendMessage(help_message);
-	})
-})
+	});
+});
 
 tg.controller('PingController', ($) => {
-	var callback = function() { $.sendMessage('pong!') };
+	var callback = function() { 
+		$.sendMessage('pong!') 
+	};
 
 	tg.for('/ping', callback);
 	tg.for('ping', callback);
@@ -41,17 +45,17 @@ tg.controller('PingController', ($) => {
 })
 
 tg.controller('KittenController', ($) => {
-	function get_kitten()
+
+	var get_kitten = function ()
 	{
 		//use imgur API to get a random image of a kitten.
 		var client_id = '6cd601bbdda89a5';
 		var auth = 'Client-ID ' + client_id;
-		var random_page_number = Math.floor(Math.random() * 3); //[0, 1, 2]
-		var url = 'https://api.imgur.com/3/gallery/search/viral/' + ((random_page_number == 0) ? "" : random_page_number);
+		var tagname = 'kitten';
+		var url = 'https://api.imgur.com/3/gallery/t/' + tagname;
 
 		var options = {
 			uri: url,
-			qs: { q_any: 'kitten kitty kittens kitties', q_all: '', qs: 'thumbs' },
 			headers: {
 				Authorization: auth
 			}
@@ -59,18 +63,63 @@ tg.controller('KittenController', ($) => {
 
 		function callback(error, response, body){
 			if(error || response.statusCode != 200){
-				console.log('request get failed.');
-				console.log('error is ' + error);
+				//console.log('request get failed.');
+				//console.log('error is ' + error);
 			}
 			else{
 				var json = JSON.parse(body);
+				console.log('json is ');
+				console.log(json);
+				var images_and_albums = json['data']['items'];
+				var keys = Object.keys(images_and_albums);
+				var rand_member = images_and_albums[0];
 
-				var keys = Object.keys(json['data']);
-				var rand_member = json['data'][keys[ keys.length * Math.random() << 0]];
-				$.sendMessage(rand_member['link']);
+				do{
+					var rand_index = keys[ keys.length * Math.random() << 0];
+					rand_member = images_and_albums[rand_index];
+					console.log('rand_member is: ');
+					console.log(rand_member);
+				}while(rand_member['is_album'])
+
+				if(!rand_member['mp4']){
+					//image, not video
+					var image_url = rand_member['link'];
+
+					if(image_url.indexOf(':\/\/imgur') > -1){
+						image_url = image_url.replace('://imgur', '://i.imgur');
+						image_url += '.png';
+					}
+
+					console.log('image_url is ');
+					console.log(image_url);
+					$.sendPhotoFromUrl(image_url);
+				}
+				else{
+					//video, not image
+					console.log('video, not image');
+
+					if (!fs.existsSync(__dirname + '/temp/')) {
+						fs.mkdirSync(__dirname + '/temp/')
+					}
+
+					//callback = callback || Function();
+					var fileName = Math.random().toString(16) + ".mp4";
+					var wstream = fs.createWriteStream(__dirname + '/temp/' + fileName);
+
+					wstream.on('finish', () => {
+						var read_stream = fs.createReadStream(__dirname + '/temp/' + fileName);
+						read_stream.on('open', () => {
+							$.sendVideo(read_stream);
+						});
+					});
+
+					request.get(rand_member['mp4']).pipe(wstream);	
+				}
 			}
 		}
-	}
+
+		request.get(options, callback);
+	};
 
 	tg.for('/kitty',  get_kitten);
 	tg.for('/kitten', get_kitten);
