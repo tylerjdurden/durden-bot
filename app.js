@@ -41,36 +41,39 @@ tg.controller('PingController', ($) => {
 })
 
 tg.controller('KittenController', ($) => {
-	//use imgur API to get a random image of a kitten.
-	var client_id = '6cd601bbdda89a5';
-	var auth = 'Client-ID ' + client_id;
-	var random_page_number = Math.floor(Math.random() * 3); //[0, 1, 2]
-	var url = 'https://api.imgur.com/3/gallery/search/viral/' + ((random_page_number == 0) ? "" : random_page_number);
+	function get_kitten()
+	{
+		//use imgur API to get a random image of a kitten.
+		var client_id = '6cd601bbdda89a5';
+		var auth = 'Client-ID ' + client_id;
+		var random_page_number = Math.floor(Math.random() * 3); //[0, 1, 2]
+		var url = 'https://api.imgur.com/3/gallery/search/viral/' + ((random_page_number == 0) ? "" : random_page_number);
 
-	var options = {
-		uri: url,
-		qs: { q_any: 'kitten kitty kittens kitties', q_all: '', qs: 'thumbs' },
-		headers: {
-			Authorization: auth
-		}
-	};
+		var options = {
+			uri: url,
+			qs: { q_any: 'kitten kitty kittens kitties', q_all: '', qs: 'thumbs' },
+			headers: {
+				Authorization: auth
+			}
+		};
 
-	function callback(error, response, body){
-		if(error || response.statusCode != 200){
-			console.log('request get failed.');
-			console.log('error is ' + error);
-		}
-		else{
-			var json = JSON.parse(body);
+		function callback(error, response, body){
+			if(error || response.statusCode != 200){
+				console.log('request get failed.');
+				console.log('error is ' + error);
+			}
+			else{
+				var json = JSON.parse(body);
 
-			var keys = Object.keys(json['data']);
-			var rand_member = json['data'][keys[ keys.length * Math.random() << 0]];
-
+				var keys = Object.keys(json['data']);
+				var rand_member = json['data'][keys[ keys.length * Math.random() << 0]];
+				$.sendMessage(rand_member['link']);
+			}
 		}
 	}
 
-	tg.for('/kitty',  request.get(options, callback));
-	tg.for('/kitten', request.get(options, callback));
+	tg.for('/kitty',  request.get(options, get_kitten));
+	tg.for('/kitten', request.get(options, get_kitten));
 })
 
 
