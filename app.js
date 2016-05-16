@@ -3,10 +3,13 @@
 var tg = require('telegram-node-bot')('192089181:AAE01YNBSlL80xnlWDNNSmKFdjOiIhSMCkE');
 var request = require('request');
 var fs = require('fs');
+var _ = require('underscore');
 //var FormData = require('form-data')
 
 // lets heroku set the port
 var port = process.env.PORT;
+
+var page_numbers = _.range(30);
 
 tg.router.
 	when(['/start'], 'StartController').
@@ -52,7 +55,14 @@ tg.controller('KittenController', ($) => {
 		var client_id = '6cd601bbdda89a5';
 		var auth = 'Client-ID ' + client_id;
 		var tagname = 'kitten';
-		var url = 'https://api.imgur.com/3/gallery/t/' + tagname;
+		
+		//switch up the page number from time to time
+		if(page_numbers.length < 2)
+			page_numbers = _.range(30);
+		var index = page_numbers.length * Math.random() << 0;
+		var page_number = page_numbers[index];
+		var url = 'https://api.imgur.com/3/gallery/t/' + tagname + '/top/all/' + page_number;
+		page_numbers = page_numbers.splice(index, 1);
 
 		var options = {
 			uri: url,
