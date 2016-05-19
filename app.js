@@ -1,16 +1,17 @@
 'use strict'
 
+//for interacting with telegram
 var tg = require('telegram-node-bot')('192089181:AAE01YNBSlL80xnlWDNNSmKFdjOiIhSMCkE');
+//for sending HTTP requests
 var request = require('request');
+//for interacting with the file system
+//  (only used for video)
 var fs = require('fs');
-var _ = require('underscore');
-//var FormData = require('form-data')
 
 // lets heroku set the port
 var port = process.env.PORT;
 
-var page_numbers = _.range(30);
-
+//routes each command to its respective controller
 tg.router.
 	when(['/start'], 'StartController').
 	when(['/help'], 'HelpController').
@@ -18,6 +19,11 @@ tg.router.
 	when(['/kitty', '/kitten'], 'KittenController').
 	when(['/imgurtag :tag1', '/imgurtag@DurdBot :tag1'], 'ImgurTagController');
 
+//@todo: move this to its own file, export it
+//
+//this function gets a random imgur image by tag.
+//thus, $.query.1 should contain a tag.
+//    if it doesn't, just send a kitten!!
 var get_image_tag_callback = function ($)
 {
 	console.log('$.query is ');
@@ -25,15 +31,10 @@ var get_image_tag_callback = function ($)
 	//use imgur API to get a random image by tag
 	var client_id = '6cd601bbdda89a5';
 	var auth = 'Client-ID ' + client_id;
-	var tagname = $.query.tag1;
+	var tagname = $.query.tag1 || 'kitten';
 
 	//switch up the page number from time to time
-	if(page_numbers.length < 2)
-		page_numbers = _.range(30);
-	var index = page_numbers.length * Math.random() << 0;
-	var page_number = page_numbers[index];
 	var url = 'https://api.imgur.com/3/gallery/t/' + tagname + '/top/all/' //+ page_number;
-	page_numbers = page_numbers.splice(index, 1);
 
 	var options = {
 		uri: url,
@@ -42,13 +43,14 @@ var get_image_tag_callback = function ($)
 		}
 	};
 
-	console.log('before callback definition');
+	//console.log('before callback definition');
 
 	function callback(error, response, body){
 		if(error || response.statusCode != 200){
 			console.log('request get failed.');
 			console.log('error is ' + error);
 			$.sendMessage('No image found for that tag...');
+			return;
 		}
 		else{
 			var json = JSON.parse(body);
@@ -111,6 +113,7 @@ var get_image_tag_callback = function ($)
 	request.get(options, callback);
 };
 
+//Doesn't do much.
 tg.controller('StartController', ($) => {
 	var start_message = 'Hi! I\'m DurdenBot. Type /help to see what I can do.';
 
@@ -119,16 +122,21 @@ tg.controller('StartController', ($) => {
 	});
 });
 
+//Displays help message
 tg.controller('HelpController', ($) => {
 	var help_message = 
 		'Type /help to see this message.' + '\n' + 
-		'Type /ping for me to reply with "pong!"' + '\n';
+		'Type /ping for me to reply with "pong!"' + '\n' +
+		'Type /kitten for a picture of a kitten!' + '\n' +
+		'Type /imgurtag TAG for a picture of something matching the TAG!' + '\n'
+		;
 
 	tg.for('/help', () => {
 		$.sendMessage(help_message);
 	});
 });
 
+//Replies with pong!
 tg.controller('PingController', ($) => {
 	var callback = function() { 
 		$.sendMessage('pong!') 
@@ -141,16 +149,18 @@ tg.controller('PingController', ($) => {
 
 })
 
+//calls function to get picture of kitten
 tg.controller('KittenController', ($) => {
 	$.query.tag1 = 'kitten';
 	tg.for('/kitty',  get_image_tag_callback.bind(tg, $));
 	tg.for('/kitten', get_image_tag_callback.bind(tg, $));
 });
 
+//calls function to get image of whatever was passed
 tg.controller('ImgurTagController', ($) => {
 	tg.for('/imgurtag :tag1', get_image_tag_callback.bind(tg, $));
 	tg.for('/imgurtag@DurdBot :tag1', get_image_tag_callback.bind(tg, $));
-})
+});
 
 
 
